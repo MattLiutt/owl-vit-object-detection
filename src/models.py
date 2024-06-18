@@ -6,7 +6,7 @@ import torch.nn as nn
 from PIL import Image
 from torch.nn.functional import softmax
 from torchvision.ops import nms, batched_nms
-from transformers import AutoProcessor, OwlViTForObjectDetection
+from transformers import AutoProcessor, Owlv2ForObjectDetection
 from transformers.image_transforms import center_to_corners_format
 import random
 
@@ -49,7 +49,7 @@ class OwlViT(torch.nn.Module):
         super().__init__()
 
         # Take the pretrained components that are useful to us
-        self.backbone = pretrained_model.owlvit.vision_model
+        self.backbone = pretrained_model.owlv2.vision_model
         self.post_post_layernorm = pretrained_model.layer_norm
         self.class_predictor = PatchedOwlViTClassPredictionHead(
             pretrained_model.class_head
@@ -67,7 +67,9 @@ class OwlViT(torch.nn.Module):
         image_feats: torch.FloatTensor,
         feature_map: torch.FloatTensor,
     ) -> torch.FloatTensor:
+        print(feature_map)
         pred_boxes = self.box_head(image_feats)
+        print(pred_boxes)
         pred_boxes += self.compute_box_bias(feature_map)
         pred_boxes = self.sigmoid(pred_boxes)
         return center_to_corners_format(pred_boxes)
@@ -149,8 +151,8 @@ class PostProcess:
 def load_model(labelmap, device):
     os.environ["TOKENIZERS_PARALLELISM"] = "false"
 
-    _model = OwlViTForObjectDetection.from_pretrained("google/owlvit-base-patch32")
-    _processor = AutoProcessor.from_pretrained("google/owlvit-base-patch32")
+    _model = Owlv2ForObjectDetection.from_pretrained("google/owlv2-base-patch16-ensemble")
+    _processor = AutoProcessor.from_pretrained("google/owlv2-base-patch16-ensemble")
 
     to_encode = []
     for label in labelmap.values():

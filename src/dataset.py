@@ -7,11 +7,11 @@ import torch
 import yaml
 from PIL import Image
 from torch.utils.data import DataLoader, Dataset
-from transformers import OwlViTProcessor
+from transformers import AutoProcessor, Owlv2VisionModel
 
-TRAIN_ANNOTATIONS_FILE = "data/train.json"
-TEST_ANNOTATIONS_FILE = "data/test.json"
-LABELMAP_FILE = "data/labelmap.json"
+TRAIN_ANNOTATIONS_FILE = r"D:\Tictag\owl-vit-object-detection\data\train.json"
+TEST_ANNOTATIONS_FILE = r"D:\Tictag\owl-vit-object-detection\data\test.json"
+LABELMAP_FILE = r"D:\Tictag\owl-vit-object-detection\data\labelmap.json"
 
 
 def get_images_dir():
@@ -77,7 +77,7 @@ def get_dataloaders(
     train_annotations_file=TRAIN_ANNOTATIONS_FILE,
     test_annotations_file=TEST_ANNOTATIONS_FILE,
 ):
-    image_processor = OwlViTProcessor.from_pretrained("google/owlvit-base-patch32")
+    image_processor = AutoProcessor.from_pretrained("google/owlv2-base-patch16-ensemble")
 
     train_dataset = OwlDataset(image_processor, train_annotations_file)
     test_dataset = OwlDataset(image_processor, test_annotations_file)
@@ -99,10 +99,10 @@ def get_dataloaders(
 
     train_labelcounts = {}
     train_dataloader = DataLoader(
-        train_dataset, batch_size=1, shuffle=True, num_workers=4
+        train_dataset, batch_size=1, shuffle=True
     )
     test_dataloader = DataLoader(
-        test_dataset, batch_size=1, shuffle=False, num_workers=4
+        test_dataset, batch_size=1, shuffle=False
     )
 
     return train_dataloader, test_dataloader, scales, labelmap
